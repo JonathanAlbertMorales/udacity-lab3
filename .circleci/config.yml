@@ -48,7 +48,6 @@ jobs:
     steps:
       - checkout
       - run: cd backend && npm i
-      - run: cd backend && npm audit fix
       - run: cd backend && npm run lint
       - save_cache:
           key: "npm-backend-packages"
