@@ -17,11 +17,11 @@ jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
+    working_directory: ~/project/frontend
     steps:
-      - checkout
-      - run: echo basename "$filename"
-      - run: cd frontend && npm i
-      - run: cd frontend && npm run lint
+      - checkout:
+          path: ~/project/frontend
+      - run: npm i
 #  build-frontend:
 
 #  test-frontend:
