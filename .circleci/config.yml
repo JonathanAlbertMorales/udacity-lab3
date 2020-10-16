@@ -41,6 +41,10 @@ jobs:
     steps:
       - checkout
       - run: cd backend && npm i
+      - save_cache:
+          key: "npm-backend-packages"
+          paths:
+            - /backend/src/node_modules
 #  test-frontend:
 
 #  est-backend:
