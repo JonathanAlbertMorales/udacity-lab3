@@ -50,7 +50,3 @@ workflows:
   frontend:
     jobs:
       - build-frontend
-        
-  default:
-    jobs:
-      - hello-world
