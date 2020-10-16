@@ -20,6 +20,8 @@ jobs:
     steps:
       - checkout
       - run: cd frontend && npm i
+      - run: cd frontend && npm audit fix
+      - run: cd frontend && npm run lint
       - save_cache:
           key: "npm-frontend-packages"
           paths:
@@ -41,10 +43,22 @@ jobs:
     steps:
       - checkout
       - run: cd backend && npm i
+      - run: cd backend && npm audit fix
+      - run: cd backend && npm run lint
       - save_cache:
           key: "npm-backend-packages"
           paths:
             - /backend/src/node_modules
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-backend-packages"
+      - run: cd backend && npm i
+      - run: cd backend && npm run test
 #  test-frontend:
 
 #  est-backend:
@@ -75,3 +89,6 @@ workflows:
       - test-frontend:
           requires:
             - build-frontend
+      - test-backend:
+          requires:
+            - build-backend
