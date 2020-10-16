@@ -15,11 +15,12 @@ jobs:
 
 #  build-frontend:
   build-frontend:
-    working_directory: /frontend
+    working_directory: ~/frontend
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
+      - checkout:
+          path: ~/frontend
       - run: npm i
       - run: npm run lint
 #  build-frontend:
