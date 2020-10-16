@@ -17,13 +17,30 @@ jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
-    working_directory: ~/project/frontend
     steps:
-      - checkout:
-          path: ~/project/frontend
-      - run: npm i
+      - checkout
+      - run: cd frontend && npm i
+      - save_cache:
+          key: "npm-frontend-packages"
+          paths:
+            - /frontend/src/node_modules
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-frontend-packages"
+      - run: cd frontend && npm i
+      - run: cd frontend && npm run test
 #  build-frontend:
-
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: cd backend && npm i
 #  test-frontend:
 
 #  est-backend:
