@@ -17,12 +17,11 @@ jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
-    working_directory: ~/udacity-lab3/frontend
     steps:
-      - checkout:
-          path: ~/udacity-lab3/frontend
-      - run: npm i
-      - run: npm run lint
+      - checkout
+      - run: echo basename "$filename"
+      - run: cd frontend && npm i
+      - run: cd frontend && npm run lint
 #  build-frontend:
 
 #  test-frontend:
