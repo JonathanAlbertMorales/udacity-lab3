@@ -34,6 +34,15 @@ jobs:
             - "npm-frontend-packages"
       - run: cd frontend && npm i
       - run: cd frontend && npm run test
+  analyze-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-frontend-packages"
+      - run: npm audit --audit-level=critical
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -56,6 +65,15 @@ jobs:
             - "npm-backend-packages"
       - run: cd backend && npm i
       - run: cd backend && npm run test
+  analyze-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-backend-packages"
+      - run: npm audit --audit-level=critical
 #  test-frontend:
 
 #  est-backend:
@@ -89,3 +107,9 @@ workflows:
       - test-backend:
           requires:
             - build-backend
+      - analyze-frontend:
+          requires:
+            - test-frontend
+      - analyze-backend:
+          requires:
+            - test-backend
