@@ -15,12 +15,12 @@ jobs:
 
 #  build-frontend:
   build-frontend:
-    working_directory: ~/frontend
     docker:
       - image: circleci/node:13.8.0
+    working_directory: ~/udacity-lab3/frontend
     steps:
       - checkout:
-          path: ~/frontend
+          path: ~/udacity-lab3/frontend
       - run: npm i
       - run: npm run lint
 #  build-frontend:
