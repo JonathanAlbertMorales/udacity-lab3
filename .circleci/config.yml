@@ -42,7 +42,6 @@ jobs:
       - restore_cache:
           keys:
             - "npm-frontend-packages"
-      - run: cd frontend && npm audit fix --audit-level=critical --force
       - run: cd frontend && npm audit --audit-level=critical
   build-backend:
     docker:
