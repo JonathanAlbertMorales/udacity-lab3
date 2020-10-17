@@ -114,10 +114,10 @@ jobs:
             command: |
               apk add --update ansible
         - run:
-          name: Create ansible inventory
-          command: |
-            cat /tmp/workspace/backend_url.txt >> .circleci/ansible/inventory.txt
-            echo .circleci/ansible/inventory.txt
+            name: Create ansible inventory
+            command: |
+              cat /tmp/workspace/backend_url.txt >> .circleci/ansible/inventory.txt
+              echo .circleci/ansible/inventory.txt
         - run:
             name: Configure server
             command: |
