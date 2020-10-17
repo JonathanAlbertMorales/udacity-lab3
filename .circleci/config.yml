@@ -115,7 +115,7 @@ jobs:
   save-files:
     docker:
       - image: circleci/node:13.8.0
-    step:
+    steps:
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
