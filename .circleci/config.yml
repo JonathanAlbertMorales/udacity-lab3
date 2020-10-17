@@ -52,7 +52,7 @@ jobs:
       - save_cache:
           key: "npm-backend-packages"
           paths:
-            - /backend/src/node_modules
+            - backend/node_modules
   test-backend:
     docker:
       - image: circleci/node:13.8.0
