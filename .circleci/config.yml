@@ -181,9 +181,10 @@ workflows:
           requires:
             - analyze-frontend
             - analyze-backend
-      - run-migrations:
-          requires:
-            - create-infrastructure
       - configure-infrastructure:
           requires:
+            - create-infrastructure
+      - run-migrations:
+          requires:
             - run-migrations
+
