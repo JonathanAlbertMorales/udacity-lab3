@@ -88,7 +88,7 @@ jobs:
       - run:
           name: get backend public url
           command: |            
-            aws ec2 describe-instances --filters "Name=backend-tag,Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" \
+            aws ec2 describe-instances --filters "Name=backend,Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" \
              --query "Reservations[*].Instances[*].[PublicDnsName]" --output text | tee /tmp/workspace/backend_url.txt      
       - persist_to_workspace:
           root: /tmp/workspace
