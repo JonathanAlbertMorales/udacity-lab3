@@ -20,7 +20,7 @@ jobs:
       - run: cd frontend && npm i
       - run: cd frontend && npm run lint
       - save_cache:
-          key: "npm-front-packages"
+          key: "frontend-packages"
           paths:
             - /frontend/node_modules
   test-frontend:
@@ -30,7 +30,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "npm-front-packages"
+            - "frontend-packages"
       - run: cd frontend && npm i
       - run: cd frontend && npm run test
   analyze-frontend:
@@ -40,7 +40,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "npm-front-packages"
+            - "frontend-packages"
       - run: cd frontend && npm audit --audit-level=critical
   build-backend:
     docker:
@@ -50,9 +50,9 @@ jobs:
       - run: cd backend && npm i
       - run: cd backend && npm run lint
       - save_cache:
-          key: "npm-back-packages"
+          key: "backend-packages"
           paths:
-            - /backend/node_modules
+            - backend/node_modules
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -60,7 +60,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "npm-back-packages"
+            - "backend-packages"
       - run: cd backend && npm i
       - run: cd backend && npm run test
   analyze-backend:
@@ -70,7 +70,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "npm-back-packages"
+            - "backend-packages"
       - run: cd backend && npm audit --audit-level=critical
   create-infrastructure:
     docker:
@@ -107,7 +107,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "npm-back-packages"
+            - "backend-packages"
       - run:
             name: migrate db
             command: |            
