@@ -72,13 +72,57 @@ jobs:
           keys:
             - "npm-backend-packages"
       - run: cd backend && npm audit --audit-level=critical
-#  test-frontend:
-
-#  est-backend:
-
-#  can-frontend:
-
-#  scan-backend:
+  create-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: mkdir /tmp/workspace
+      - run:
+          name: create backend
+          command: |
+            cd .circleci/files
+            aws cloudformation deploy --template-file backend.yml \
+              --stack-name "backend--stack-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}"
+      - run:
+          name: get backend public url
+          command: |            
+            aws ec2 describe-instances --filters "Name=backend-tag,Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" \
+             --query "Reservations[*].Instances[*].[PublicDnsName]" --output text | tee /tmp/workspace/backend_url.txt      
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - backend_url.txt
+      - run:
+          name: create frontend
+          command: |
+            cd .circleci/files
+            aws cloudformation deploy \
+              --template-file frontend.yml \
+              --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" 
+    configure-infrastructure:
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: ["aa:81:14:df:30:45:ca:43:bd:d2:28:03:38:3a:fc:c9"]
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update ansible
+        - run:
+          name: Create ansible inventory
+          command: |
+            cat /tmp/workspace/backend_url.txt >> .circleci/ansible/inventory.txt
+            echo .circleci/ansible/inventory.txt
+        - run:
+            name: Configure server
+            command: |
+              cd .circleci/ansible/
+              ansible-playbook -i inventory.txt playbook.yml
 
 #  deploy-infrastructure:
 
@@ -111,3 +155,10 @@ workflows:
       - analyze-backend:
           requires:
             - test-backend
+      - create-infrastructure:
+          requires:
+            - analyze-frontend
+            - analyze-backend
+      - configure-infrastructure:
+          requires:
+            - create-infrastructure
