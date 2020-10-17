@@ -105,8 +105,6 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - checkout
-      - install-dependencies:
-          layer: "backend"
       - run:
             name: migrate db
             command: |            
