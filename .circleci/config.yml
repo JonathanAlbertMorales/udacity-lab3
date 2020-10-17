@@ -74,8 +74,8 @@ jobs:
       - run: cd backend && npm audit --audit-level=critical
   create-infrastructure:
     docker:
-      - image: amazon/aws-cli
       - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run: mkdir /tmp/workspace
