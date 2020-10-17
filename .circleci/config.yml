@@ -74,7 +74,7 @@ jobs:
       - run: cd backend && npm audit --audit-level=critical
   create-infrastructure:
     docker:
-      - image: aws-cli/default
+      - image: amazon/aws-cli
     steps:
       - checkout
       - run: mkdir /tmp/workspace
@@ -90,10 +90,6 @@ jobs:
           command: |            
             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" \
              --query "Reservations[*].Instances[*].[PublicDnsName]" --output text | tee /tmp/workspace/backend_url.txt      
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - backend_url.txt
       - run:
           name: create frontend
           command: |
@@ -102,6 +98,32 @@ jobs:
               --template-file frontend.yml \
               --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" 
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - install-dependencies:
+          layer: "backend"
+      - run:
+            name: migrate db
+            command: |            
+              cd backend
+              npm run migrations | tee /tmp/workspace/db-migration-log.txt
+  save-files:
+    docker:
+      - image: circleci/node:13.8.0
+    step:
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - db-migration-log.txt
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - backend_url.txt
   configure-infrastructure:
       docker:
         - image: python:3.7-alpine3.11
@@ -159,6 +181,12 @@ workflows:
           requires:
             - analyze-frontend
             - analyze-backend
-      - configure-infrastructure:
+      - run-migrations:
           requires:
             - create-infrastructure
+      - save-files:
+          requires:
+            - run-migrations
+      - configure-infrastructure:
+          requires:
+            - save-files
