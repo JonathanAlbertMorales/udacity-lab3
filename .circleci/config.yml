@@ -84,12 +84,12 @@ jobs:
             cd .circleci/files
             aws cloudformation deploy --template-file backend.yml \
               --stack-name "backend--stack-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}"
+              --parameter-overrides ID="backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}"   
       - run:
-          name: get backend public url
-          command: |            
-            aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" \
-             --query "Reservations[*].Instances[*].[PublicDnsName]" --output text | tee /tmp/workspace/backend_url.txt      
+          name: save backend url
+          command: | 
+              curl -H "Content-Type: text/plain" -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request PUT 
+              --data "$(aws ec2 describe-instances  --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output=text)" https://api.memstash.io/values/backend-url 
       - run:
           name: create frontend
           command: |
@@ -109,22 +109,25 @@ jobs:
           keys:
             - "backend-packages"
       - run:
+            name: Creating environment file for backend
+            command: |
+              echo -e "NODE_ENV=production\nVERSION=1\nTYPEORM_CONNECTION=${TYPEORM_CONNECTION}\nTYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR} \nTYPEORM_ENTITIES=${TYPEORM_ENTITIES}\nTYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}\nTYPEORM_HOST=${TYPEORM_HOST}\nTYPEORM_PORT=${TYPEORM_PORT}\nTYPEORM_USERNAME=${TYPEORM_USERNAME}\nTYPEORM_PASSWORD=${TYPEORM_PASSWORD}\nTYPEORM_DATABASE=${TYPEORM_DATABASE}\nENVIRONMENT=production" > ./backend/.env
+              cat ./backend/.env
+              cat ./.circleci/ansible/inventory
+                
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+              - ./backend/.env
+      - run:
             name: migrate db
             command: |            
               cd backend
               npm run migrations | tee /tmp/workspace/db-migration-log.txt
-  save-files:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
-            - db-migration-log.txt
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - backend_url.txt
+              - db-migration-log.txt
   configure-infrastructure:
       docker:
         - image: python:3.7-alpine3.11
@@ -139,7 +142,7 @@ jobs:
         - run:
             name: Create ansible inventory
             command: |
-              cat /tmp/workspace/backend_url.txt >> .circleci/ansible/inventory.txt
+              curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url  >> .circleci/ansible/inventory.txt  
               echo .circleci/ansible/inventory.txt
         - run:
             name: Configure server
@@ -185,9 +188,6 @@ workflows:
       - run-migrations:
           requires:
             - create-infrastructure
-      - save-files:
-          requires:
-            - run-migrations
       - configure-infrastructure:
           requires:
-            - save-files
+            - run-migrations
