@@ -164,7 +164,7 @@ jobs:
             name: build frontend
             command: | 
               cd frontend && npm run build
-              cp /frontend/dist /tmp/workspace/frontend
+              cp dist /tmp/workspace/frontend
         - persist_to_workspace:
             root: /tmp/workspace
             paths:
