@@ -137,8 +137,9 @@ jobs:
         - run:
             name: Create ansible inventory
             command: |
-              apk --no-cache add curl &&
-              curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url  >> .circleci/ansible/inventory.txt &&
+              apk --no-cache add curl 
+              echo [all] > ~/inventory.txt
+              curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url  >> .circleci/ansible/inventory.txt 
               cat .circleci/ansible/inventory.txt
         - run:
             name: Configure server
