@@ -121,7 +121,7 @@ jobs:
           root: /tmp/workspace
           paths:
               - db-migration-log.txt
-  configure-infrastructure:
+  configure-backend:
       docker:
         - image: python:3.7-alpine3.11
       steps:
@@ -144,6 +144,12 @@ jobs:
             command: |
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/playbook.yml
+  configure-frontend:
+      docker:
+        - image: circleci/node:13.8.0
+      steps:
+        - attach_workspace:
+            at: /tmp/workspace
         - run:
             name: export backend url for front end
             command: |
@@ -232,16 +238,19 @@ workflows:
           requires:
             - analyze-frontend
             - analyze-backend
-      - configure-infrastructure:
+      - configure-backend:
           requires:
             - create-infrastructure
       - run-migrations:
           requires:
-            - configure-infrastructure
+            - configure-backend
+      - configure-frontend:
+          requires:
+            - create-infrastructure
       - deploy-backend:
           requires:
             - run-migrations
       - deploy-frontend:
           requires:
-            - run-migrations
+            - configure-frontend
 
