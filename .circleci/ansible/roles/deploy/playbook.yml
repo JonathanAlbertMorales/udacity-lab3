@@ -3,7 +3,6 @@
   user: ubuntu
   tasks:
     - name: Creates directory
-      file:
       path: ~/web
       state: directory
 
