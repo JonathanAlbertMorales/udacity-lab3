@@ -15,5 +15,10 @@
         TYPEORM_USERNAME: "{{ lookup('env','TYPEORM_USERNAME') }}"
         TYPEORM_PASSWORD: "{{ lookup('env','TYPEORM_PASSWORD') }}"
         TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
+  tasks:    
+      - name: print my variables
+        debug:
+          msg: "{{ lookup('env','TYPEORM_CONNECTION') }}"
   roles:
+    - weareinteractive.environment
     - configure-server
