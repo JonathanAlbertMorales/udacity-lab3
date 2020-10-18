@@ -145,7 +145,7 @@ jobs:
             name: Configure server
             command: |
               cat .circleci/ansible/inventory.txt
-              ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/configure-server/main.yml
+              export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/configure-server/main.yml
 
 #  deploy-infrastructure:
 
