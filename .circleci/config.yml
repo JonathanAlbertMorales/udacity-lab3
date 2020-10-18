@@ -163,7 +163,7 @@ jobs:
         - run:
             name: build frontend
             command: | 
-              cd frontend && npm run build
+              cd frontend && npm update && npm run build
               cp dist /tmp/workspace/frontend
         - persist_to_workspace:
             root: /tmp/workspace
