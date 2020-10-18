@@ -88,7 +88,7 @@ jobs:
       - run:
           name: save backend url
           command: | 
-              curl -H "Content-Type: text/plain" -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request PUT --data "$(aws ec2 describe-instances  --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output=text)" https://api.memstash.io/values/backend-url 
+              curl -H "Content-Type: text/plain" -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request PUT --data "$(aws ec2 describe-instances  --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name, Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" --output=text)" https://api.memstash.io/values/backend-url 
       - run:
           name: create frontend
           command: |
