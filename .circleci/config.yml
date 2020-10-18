@@ -156,16 +156,11 @@ jobs:
         - run:
             name: build frontend
             command: cd frontend && npm run build
-        - run:
-            name: save front build
-            command: |
-              cd frontend/dist
-              tar -zcvf /tmp/workspace/frontendbuild.tar.gz ./
         - persist_to_workspace:
             root: /tmp/workspace
             paths:
-              - frontendbuild.tar.gz
-    deploy-backend:
+              - ./frontend/dist
+  deploy-backend:
       docker:
         - image: python:3.7-alpine3.11
       steps:
@@ -188,30 +183,20 @@ jobs:
             command: |
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
-      deploy-frontend:
-        docker:
-          - image: amazon/aws-cli
-        steps:
-          - checkout
-          - run:
-              name: add tar
-              command: yum install -y tar gzip
-          - attach_workspace:
-              at: /tmp/workspace
-          - run:
-              name: decompress frontend
-              command: |
-                mkdir frontendbuild
-                cp /tmp/workspace/frontendbuild.tar.gz frontendbuild
-                cd frontendbuild
-                tar -zxvf frontend.tar.gz
-                ls -la
-          - run:
-              name: deploy to s3 bucket
-              command: |
-                cd frontendbuild
-                rm frontendbuild.tar.gz
-                aws s3 sync . s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+  deploy-frontend:
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: add tar
+            command: yum install -y tar gzip
+        - attach_workspace:
+            at: /tmp/workspace
+        - run:
+            name: deploy to s3 bucket
+            command: |
+              aws s3 cp /tmp/workspace/frontend/dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
 #  deploy-infrastructure:
 
 #  configure-infrastructure:
@@ -253,4 +238,10 @@ workflows:
       - run-migrations:
           requires:
             - configure-infrastructure
+      - deploy-backend:
+          requires:
+            - run-migrations
+      - deploy-frontend:
+          requires:
+            - run-migrations
 
