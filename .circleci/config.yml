@@ -111,9 +111,7 @@ jobs:
             name: Creating environment file for backend
             command: |
               echo -e "NODE_ENV=production\nVERSION=1\nTYPEORM_CONNECTION=${TYPEORM_CONNECTION}\nTYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR} \nTYPEORM_ENTITIES=${TYPEORM_ENTITIES}\nTYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}\nTYPEORM_HOST=${TYPEORM_HOST}\nTYPEORM_PORT=${TYPEORM_PORT}\nTYPEORM_USERNAME=${TYPEORM_USERNAME}\nTYPEORM_PASSWORD=${TYPEORM_PASSWORD}\nTYPEORM_DATABASE=${TYPEORM_DATABASE}\nENVIRONMENT=production" > ./backend/.env
-              cat backend/.env
-
-                
+              cat backend/.env        
       - run:
             name: migrate db
             command: |            
@@ -146,7 +144,74 @@ jobs:
             command: |
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/playbook.yml
-
+        - run:
+            name: export backend url for front end
+            command: |
+               export API_URL=$(curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url)
+               echo "API_URL=http://$API_URL:3030" >>  frontend/.env
+               cat frontend/.env
+        - restore_cache:
+            keys:
+              - "frontend-packages"
+        - run:
+            name: build frontend
+            command: cd frontend && npm run build
+        - run:
+            name: save front build
+            command: |
+              cd frontend/dist
+              tar -zcvf /tmp/workspace/frontendbuild.tar.gz ./
+        - persist_to_workspace:
+            root: /tmp/workspace
+            paths:
+              - frontendbuild.tar.gz
+    deploy-backend:
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: ["aa:81:14:df:30:45:ca:43:bd:d2:28:03:38:3a:fc:c9"]
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update ansible
+              apk --no-cache add curl 
+        - run:
+            name: Create ansible inventory
+            command: |
+              echo [all] > .circleci/ansible/inventory.txt
+              curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url  >> .circleci/ansible/inventory.txt 
+              cat .circleci/ansible/inventory.txt
+        - run:
+            name: Configure server
+            command: |
+              cat .circleci/ansible/inventory.txt
+              export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
+      deploy-frontend:
+        docker:
+          - image: amazon/aws-cli
+        steps:
+          - checkout
+          - run:
+              name: add tar
+              command: yum install -y tar gzip
+          - attach_workspace:
+              at: /tmp/workspace
+          - run:
+              name: decompress frontend
+              command: |
+                mkdir frontendbuild
+                cp /tmp/workspace/frontendbuild.tar.gz frontendbuild
+                cd frontendbuild
+                tar -zxvf frontend.tar.gz
+                ls -la
+          - run:
+              name: deploy to s3 bucket
+              command: |
+                cd frontendbuild
+                rm frontendbuild.tar.gz
+                aws s3 sync . s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
 #  deploy-infrastructure:
 
 #  configure-infrastructure:

@@ -9,7 +9,7 @@
 
     - name: Copy index test page
       template:
-        src: /backend
+        src: ../../../../backend
         dest: ~/web
 
     - name: Executing node
