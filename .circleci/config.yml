@@ -20,9 +20,9 @@ jobs:
       - run: cd frontend && npm i
       - run: cd frontend && npm run lint
       - save_cache:
-          key: "frontend-packages"
+          key: "frontend-npm-packages"
           paths:
-            - /frontend/node_modules
+            - frontend/node_modules
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -30,7 +30,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "frontend-packages"
+            - "frontend-npm-packages"
       - run: cd frontend && npm i
       - run: cd frontend && npm run test
   analyze-frontend:
@@ -40,7 +40,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - "frontend-packages"
+            - "frontend-npm-packages"
       - run: cd frontend && npm audit --audit-level=critical
   build-backend:
     docker:
@@ -159,7 +159,7 @@ jobs:
                cat frontend/.env
         - restore_cache:
             keys:
-              - "frontend-packages"
+              - "frontend-npm-packages"
         - run:
             name: build frontend
             command: cd frontend && npm run build
