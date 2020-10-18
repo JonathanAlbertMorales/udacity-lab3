@@ -153,8 +153,9 @@ jobs:
         - run:
             name: export backend url for front end
             command: |
+               ls -la
                export API_URL=$(curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url)
-               echo "API_URL=http://$API_URL:3030" >  ./frontend/.env
+               echo "API_URL=http://$API_URL:3030" >  frontend/.env
                cat frontend/.env
         - restore_cache:
             keys:
