@@ -20,5 +20,4 @@
         debug:
           msg: "{{ lookup('env','TYPEORM_CONNECTION') }}"
   roles:
-    - weareinteractive.environment
     - configure-server

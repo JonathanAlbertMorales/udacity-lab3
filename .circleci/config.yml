@@ -135,7 +135,6 @@ jobs:
             command: |
               apk add --update ansible
               apk --no-cache add curl 
-              ansible-galaxy install weareinteractive.environment
         - run:
             name: Create ansible inventory
             command: |
