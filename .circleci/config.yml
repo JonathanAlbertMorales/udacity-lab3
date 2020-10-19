@@ -206,7 +206,7 @@ jobs:
         - run:
             name: deploy to s3 bucket
             command: |
-              aws s3 cp /tmp/workspace/frontend s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+              aws s3 cp -r /tmp/workspace/frontend s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}
 #  deploy-infrastructure:
 
 #  configure-infrastructure:
