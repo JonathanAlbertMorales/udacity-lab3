@@ -8,8 +8,8 @@
         state: directory
 
     - name: Copy index test page
-      template:
-        src: ../../../../../backend
+      copy:
+        src: ../../../../backend
         dest: ~/web
 
     - name: Executing node
