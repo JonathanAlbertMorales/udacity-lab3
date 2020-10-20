@@ -14,4 +14,4 @@
 
     - name: Executing node
       shell: |
-        pm2 start ~/web/backend/main.ts -f
+        pm2 start ~/web/backend/src/main.ts -f
