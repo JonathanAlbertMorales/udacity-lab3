@@ -53,10 +53,11 @@ jobs:
           key: "backend-packages"
           paths:
             - backend/node_modules
+      - run: mkdir /tmp/workspace
       - run:
           name: save backend build
           command: |
-            mkdir /tmp/workspace
+            ls -la
             cd backend/dist
             tar -zcvf /tmp/workspace/backend.tar.gz ./
       - persist_to_workspace:
@@ -207,9 +208,6 @@ jobs:
         - image: amazon/aws-cli
       steps:
         - checkout
-        - run:
-            name: add tar
-            command: yum install -y tar gzip
         - attach_workspace:
             at: /tmp/workspace
         - run:
