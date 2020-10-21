@@ -49,6 +49,7 @@ jobs:
       - checkout
       - run: cd backend && npm i
       - run: cd backend && npm run lint
+      - run: cd backend && npm run build
       - save_cache:
           key: "backend-packages"
           paths:
