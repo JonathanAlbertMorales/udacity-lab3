@@ -11,6 +11,7 @@
       unarchive:
         src: /tmp/workspace/backend.tar.gz
         dest: ~/web
+        remote_src: yes
     - name: start server
       become: yes
       shell: |    
