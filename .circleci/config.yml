@@ -53,6 +53,16 @@ jobs:
           key: "backend-packages"
           paths:
             - backend/node_modules
+      - run:
+          name: save backend build
+          command: |
+            mkdir /tmp/workspace
+            cd backend/dist
+            tar -zcvf /tmp/workspace/backend.tar.gz ./
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - backend.tar.gz
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -77,7 +87,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: mkdir /tmp/workspace
       - run:
           name: create backend
           command: |

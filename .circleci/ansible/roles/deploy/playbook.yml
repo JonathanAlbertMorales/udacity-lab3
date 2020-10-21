@@ -6,12 +6,13 @@
       file:
         path: ~/web
         state: directory
-
-    - name: Copy index test page
-      copy:
-        src: ../../../../backend
+    - name: get backend
+      become: yes
+      unarchive:
+        src: /tmp/workspace/backend.tar.gz
         dest: ~/web
-
-    - name: Executing node
-      shell: |
-        pm2 start ~/web/backend/src/main.ts -f
+    - name: start server
+      become: yes
+      shell: |    
+        cd ~/web
+        pm2 start main.js
