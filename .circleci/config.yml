@@ -204,7 +204,7 @@ jobs:
         - run:
             name: Configure server
             command: |
-              ls -la
+              ls -la /tmp/workspace
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
   deploy-frontend:
