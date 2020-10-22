@@ -10,6 +10,7 @@
       copy:
         src: /tmp/workspace/backend.tar.gz
         dest: ~/web
+        remote_src: yes
     - name: Unarchive backend
       unarchive:
         src: ~/web/backend.tar.gz
