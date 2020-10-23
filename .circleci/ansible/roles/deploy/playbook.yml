@@ -7,11 +7,9 @@
         path: ~/web
         state: directory
     - name: get backend
-      become: yes
       copy:
-        src: ../../../../../dist
+        src: ../../../../dist
         dest: web
-        remote_src: yes
     - name: start server
       shell: |    
         cd ~/web/dist

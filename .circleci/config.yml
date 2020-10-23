@@ -206,6 +206,7 @@ jobs:
             command: |
               mkdir /dist
               tar -C /dist -xvf /tmp/workspace/backend.tar.gz
+              ls -la
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
   deploy-frontend:
