@@ -190,6 +190,7 @@ jobs:
             fingerprints: ["aa:81:14:df:30:45:ca:43:bd:d2:28:03:38:3a:fc:c9"]
         - attach_workspace:
             at: /tmp/workspace
+        - run: yum install -y tar gzip
         - run:
             name: Install dependencies
             command: |
@@ -204,7 +205,8 @@ jobs:
         - run:
             name: Configure server
             command: |
-              ls -la /tmp/workspace
+              mkdir dist
+              tar -C /dist -xvf /tmp/workspace/backend.tar.gz
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
   deploy-frontend:

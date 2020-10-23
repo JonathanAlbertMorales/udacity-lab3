@@ -8,8 +8,8 @@
         state: directory
     - name: get backend
       become: yes
-      unarchive:
-        src: /tmp/workspace/backend.tar.gz
+      copy:
+        src: ../../../../dist
         dest: web
         remote_src: yes
     - name: start server
