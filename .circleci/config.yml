@@ -204,7 +204,7 @@ jobs:
         - run:
             name: Configure server
             command: |
-              mkdir dist
+              mkdir /dist
               tar -C /dist -xvf /tmp/workspace/backend.tar.gz
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
