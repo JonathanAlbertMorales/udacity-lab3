@@ -13,12 +13,11 @@
         dest: web
     - name: Unarchive backend
       become: yes
-      unarchive:
-        src: /web/backend.tar.gz
-        dest: /web
-        remote_src: yes
+      shell: |
+        cd /home/ubuntu/web
+        tar -xvzf backend.tar.gz
     - name: start 
       become: yes
       shell: |    
-        cd /home/ubuntu/web/backend  
+        cd /home/ubuntu/web
         pm2 start npm --no-automation --name "backend" -- run start
