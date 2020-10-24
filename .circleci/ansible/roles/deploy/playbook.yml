@@ -16,7 +16,7 @@
       become: yes
       unarchive:
         src: web/backend.tar.gz
-        dest: web
+        dest: home/ubuntu/web
         remote_src: yes
     - name: start 
       become: yes
