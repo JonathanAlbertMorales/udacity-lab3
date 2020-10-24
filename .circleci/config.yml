@@ -2,15 +2,31 @@ version: 2.1
 
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
-# commands:
-#   destroy-environment:
-#     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
-#     ...
 
-#   revert-migration:
-#     description: Revert the last migration if successfully run in the current workflow.
-#     ...
-
+commands:
+  destroy-environment:
+    description: Destroy the backend and frontend cloudformation stacks
+    steps:
+      - run:
+          name: destroy environment
+          command: |
+            aws s3 rm "s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID}" --recursive
+            aws cloudformation delete-stack --stack-name "frontend-${CIRCLE_WORKFLOW_ID}"
+            aws cloudformation delete-stack --stack-name "backend-stack-${CIRCLE_WORKFLOW_ID}"
+          when: on_fail
+  revert-migration:
+    description: revert the last migration
+    steps:
+      - run:
+          name: revert migrations
+          command: |
+              if [ -f /tmp/workspace/db-migration-log.txt]; then
+                cd backend
+                npm install
+                npm run migration:revert
+              else
+                echo "migration was not done"
+              fi
 jobs:
   build-frontend:
     docker:
@@ -96,7 +112,7 @@ jobs:
           command: |
             cd .circleci/files
             aws cloudformation deploy --template-file backend.yml \
-              --stack-name "backend--stack-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --stack-name "backend-stack-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="deployment-${CIRCLE_WORKFLOW_ID:0:7}"   
       - run:
           name: save backend url
@@ -110,6 +126,7 @@ jobs:
               --template-file frontend.yml \
               --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" 
+      - destroy-environment
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
@@ -120,6 +137,7 @@ jobs:
       - restore_cache:
           keys:
             - "backend-packages"
+      - run: pip install awscli
       - run:
             name: Creating environment file for backend
             command: |
@@ -134,18 +152,22 @@ jobs:
           root: /tmp/workspace
           paths:
               - db-migration-log.txt
+      - destroy-environment
   configure-backend:
       docker:
         - image: python:3.7-alpine3.11
       steps:
         - checkout
+        - attach_workspace:
+            at: /tmp/workspace
         - add_ssh_keys:
             fingerprints: ["aa:81:14:df:30:45:ca:43:bd:d2:28:03:38:3a:fc:c9"]
         - run:
             name: Install dependencies
             command: |
               apk add --update ansible
-              apk --no-cache add curl 
+              apk --no-cache add curl
+              pip install awscli 
         - run:
             name: Create ansible inventory
             command: |
@@ -157,6 +179,8 @@ jobs:
             command: |
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/playbook.yml
+        - destroy-environment
+        - revert-migration
   configure-frontend:
       docker:
         - image: circleci/node:13.8.0
@@ -183,6 +207,8 @@ jobs:
             root: /tmp/workspace
             paths:
               - frontend
+        - destroy-environment
+        - revert-migration
   deploy-backend:
       docker:
         - image: python:3.7-alpine3.11
@@ -197,6 +223,7 @@ jobs:
             command: |
               apk add --update ansible
               apk --no-cache add curl 
+              pip install awscli
         - run:
             name: Create ansible inventory
             command: |
@@ -210,7 +237,9 @@ jobs:
               cp --recursive /tmp/workspace/backend.tar.gz dist
               ls -la
               cat .circleci/ansible/inventory.txt
-              export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
+              export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml
+        - destroy-environment
+        - revert-migration   
   deploy-frontend:
       docker:
         - image: amazon/aws-cli
@@ -223,19 +252,76 @@ jobs:
             name: deploy to s3 bucket
             command: |
               aws s3 cp --recursive /tmp/workspace/frontend s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}
-#  deploy-infrastructure:
-
-#  configure-infrastructure:
-
-#  run-migrations:
-
-#  deploy-frontend:
-
-#  deploy-backend:  
-
-#  smoke-test:
-
-#  cloudfront-update:
+        - destroy-environment
+        - revert-migration
+  smoke-test:
+    docker:
+       - image: alpine:latest
+    steps:
+       - run: apk add --update curl
+       - run: pip install awscli
+       - attach_workspace:
+            at: /tmp/workspace
+       - run: 
+           name: smoke test for frontend
+           command: |
+              URL="http://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html#/employees"    
+              if curl -s --head ${URL}
+              then
+               return 0
+              else
+               return 1
+              fi
+      - run:
+           name: smoketest for backend
+           command: | 
+                API_URL=$(curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url)
+                curl "http://${API_URL}:3030/api/status"
+      - destroy-environment
+      - revert-migration
+  cloudfront-update:
+     docker:
+       - image: amazon/aws-cli
+     steps:
+       - checkout
+       - attach_workspace:
+            at: /tmp/workspace
+       - run:
+           name: update cloudformation
+           command: |
+               aws cloudformation deploy --stack-name "cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --template-file ~/.circleci/files/cloudfront.yml --capabilities CAPABILITY_NAMED_IAM
+       - run:
+           name: delete old stacks of cloudfront, cloudformation, and S3 bucket
+           command: |
+               export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+               aws s3 rb s3://udapeople-frontend-deployment-${OLD_WORKFLOW_ID} --force  --region "us-east-1"
+               aws cloudformation delete-stack --stack-name  backend-stack-${OLD_WORKFLOW_ID}
+               aws cloudformation delete-stack --stack-name  cloudfront-${OLD_WORKFLOW_ID}
+        - destroy-environment
+        - revert-migration
+  run-prometheus-exporter:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps: 
+      - checkout
+      - attach_workspace:
+            at: /tmp/workspace 
+      - add_ssh_keys:
+           fingerprints: ["aa:81:14:df:30:45:ca:43:bd:d2:28:03:38:3a:fc:c9"]
+      - run:
+          name: Install dependencies
+          command: |
+                apk add --update ansible
+                pip install awscli
+      - run: 
+          name: Configure prometheus-node
+          command: |
+                apk --no-cache add curl && 
+                echo [all] > ~/inventory.txt &&
+                curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend_url >> ~/inventory.txt && 
+                export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook  -i ~/inventory.txt .circleci/ansible/roles/configure-prometheus-node-exporter/playbook.yml
+          - destroy-environment
+          - revert-migration
 
 workflows:
   frontend:
@@ -273,4 +359,8 @@ workflows:
       - deploy-frontend:
           requires:
             - configure-frontend
+      - smoke-test:
+          requires:
+            - deploy-frontend
+            - deploy-backend
 
