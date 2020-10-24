@@ -61,6 +61,7 @@ jobs:
           command: |
             ls -la
             cd backend
+            npm install
             tar -zcvf /tmp/workspace/backend.tar.gz ./
       - persist_to_workspace:
           root: /tmp/workspace
