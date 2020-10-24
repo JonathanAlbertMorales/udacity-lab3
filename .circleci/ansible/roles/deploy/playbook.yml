@@ -3,10 +3,12 @@
   user: ubuntu
   tasks:
     - name: Creates directory
+      become: yes
       file:
         path: ~/web
         state: directory
     - name: get backend
+      become: yes
       copy:
         src: ../../../../dist
         dest: web
