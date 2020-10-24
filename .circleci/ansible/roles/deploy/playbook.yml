@@ -14,7 +14,7 @@
         dest: web
     - name: Unarchive backend
       unarchive:
-        src: web/backend.tar.gz
+        src: ~/web/backend.tar.gz
         dest: web
         remote_src: yes
     - name: start 
