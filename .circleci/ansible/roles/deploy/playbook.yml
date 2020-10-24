@@ -16,6 +16,7 @@
       unarchive:
         src: web/backend.tar.gz
         dest: web
+        remote_src: yes
     - name: start 
       become: yes
       shell: |    
