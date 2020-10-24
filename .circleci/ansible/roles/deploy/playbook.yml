@@ -13,6 +13,7 @@
         src: ../../../../dist/backend.tar.gz
         dest: web
     - name: Unarchive backend
+      become: yes
       unarchive:
         src: ~/web/backend.tar.gz
         dest: ~/web
