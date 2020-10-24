@@ -10,7 +10,8 @@
       copy:
         src: ../../../../dist
         dest: web
-    - name: start server
+    - name: start 
+      become: yes
       shell: |    
         cd ~/web/dist
         pm2 start main.js --name backend
