@@ -10,9 +10,14 @@
     - name: get backend
       become: yes
       copy:
-        src: ../../../../dist
+        src: ../../../../dist/backend.tar.gz
+        dest: web
+    - name: Unarchive backend
+      unarchive:
+        src: /web/backend.tar.gz
         dest: web
     - name: start 
       become: yes
       shell: |    
-      pm2 start dist/main.js --name backend
+      cd /home/ubuntu/web/backend  
+      pm2 start npm --no-automation --name "backend" -- run start

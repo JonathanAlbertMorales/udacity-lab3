@@ -60,7 +60,7 @@ jobs:
           name: save backend build
           command: |
             ls -la
-            cd backend/dist
+            cd backend
             tar -zcvf /tmp/workspace/backend.tar.gz ./
       - persist_to_workspace:
           root: /tmp/workspace
@@ -206,7 +206,7 @@ jobs:
             name: Configure server
             command: |
               mkdir dist
-              tar -C dist -xvf /tmp/workspace/backend.tar.gz
+              cp --recursive /tmp/workspace/backend.tar.gz dist
               ls -la
               cat .circleci/ansible/inventory.txt
               export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/roles/deploy/playbook.yml   
