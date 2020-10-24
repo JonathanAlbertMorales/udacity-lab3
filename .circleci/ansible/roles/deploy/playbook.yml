@@ -13,4 +13,4 @@
     - name: start server
       shell: |    
         cd ~/web/dist
-        pm2 start main.js
+        pm2 start main.js --name backend
