@@ -19,5 +19,5 @@
     - name: start 
       become: yes
       shell: |    
-      cd /home/ubuntu/web/backend  
-      pm2 start npm --no-automation --name "backend" -- run start
+        cd /home/ubuntu/web/backend  
+        pm2 start npm --no-automation --name "backend" -- run start
