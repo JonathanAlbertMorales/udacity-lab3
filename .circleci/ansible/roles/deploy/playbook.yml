@@ -3,7 +3,6 @@
   user: ubuntu
   tasks:
     - name: Creates directory
-      become: yes
       file:
         path: ~/web
         state: directory
@@ -16,7 +15,7 @@
       become: yes
       unarchive:
         src: web/backend.tar.gz
-        dest: home/ubuntu/web
+        dest: web
         remote_src: yes
     - name: start 
       become: yes
