@@ -11,9 +11,9 @@ commands:
           name: destroy environment
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID}" --recursive
-            aws cloudformation delete-stack --stack-name "frontend-${CIRCLE_WORKFLOW_ID}"
-            aws cloudformation delete-stack --stack-name "backend-stack-${CIRCLE_WORKFLOW_ID}"
+            aws s3 rm "s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws cloudformation delete-stack --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "backend-stack-${CIRCLE_WORKFLOW_ID:0:7}"
           
   revert-migration:
     description: revert the last migration
@@ -135,7 +135,7 @@ jobs:
     steps:
       - checkout
       - run: yum install -y tar gzip
-      - run: yum -y install nodejs
+      - run: sudo yum install nodejs npm --enablerepo=epel
       - attach_workspace:
           at: /tmp/workspace
       - restore_cache:
