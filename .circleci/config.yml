@@ -133,8 +133,6 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - attach_workspace:
-          at: /tmp/workspace
       - checkout
       - run: yum install -y tar gzip
       - attach_workspace:
