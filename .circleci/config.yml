@@ -137,6 +137,8 @@ jobs:
           at: /tmp/workspace
       - checkout
       - run: yum install -y tar gzip
+      - attach_workspace:
+          at: /tmp/workspace
       - restore_cache:
           keys:
             - "backend-packages"
