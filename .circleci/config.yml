@@ -131,11 +131,15 @@ jobs:
       - destroy-environment
   run-migrations:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run: yum install -y tar gzip
-      - run: yum install nodejs npm --enablerepo=epel
+      - run:
+          name: install PIP
+          command: sudo apt-get install python-pip python-dev
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
       - attach_workspace:
           at: /tmp/workspace
       - restore_cache:
