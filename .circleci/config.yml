@@ -9,16 +9,18 @@ commands:
     steps:
       - run:
           name: destroy environment
+          when: on_fail
           command: |
             aws s3 rm "s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID}" --recursive
             aws cloudformation delete-stack --stack-name "frontend-${CIRCLE_WORKFLOW_ID}"
             aws cloudformation delete-stack --stack-name "backend-stack-${CIRCLE_WORKFLOW_ID}"
-         when: on_fail
+          
   revert-migration:
     description: revert the last migration
     steps:
       - run:
           name: revert migrations
+          when: on_fail
           command: |
               if [ -f /tmp/workspace/db-migration-log.txt]; then
                 cd backend
@@ -27,7 +29,6 @@ commands:
               else
                 echo "migration was not done"
               fi
-           when: on_fail
 jobs:
   build-frontend:
     docker:
