@@ -22,7 +22,7 @@ commands:
           name: revert migrations
           when: on_fail
           command: |
-              if [ -f /tmp/workspace/db-migration-log.txt]; then
+              if [ -f /tmp/workspace/db-migration-log.txt ]; then
                 cd backend
                 npm install
                 npm run migration:revert
@@ -263,7 +263,7 @@ jobs:
         - revert-migration
   smoke-tests:
     docker:
-        - image: alpine:latest
+        - image: python:3.7-alpine3.11
     steps:
        - run: apk add --update curl
        - run: pip install awscli
