@@ -137,7 +137,7 @@ jobs:
       - restore_cache:
           keys:
             - "backend-packages"
-      - run: pip install awscli
+      - run: apt-get install awscli
       - run:
             name: Creating environment file for backend
             command: |
