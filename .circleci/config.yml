@@ -296,11 +296,12 @@ jobs:
         - run:
             name: update cloudformation
             command: |
-              aws cloudformation deploy --stack-name "cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --template-file ~/.circleci/files/cloudfront.yml --capabilities CAPABILITY_NAMED_IAM
+              aws cloudformation deploy --stack-name "cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --template-file .circleci/files/cloudfront.yml --capabilities CAPABILITY_NAMED_IAM
         - run:
             name: delete old stacks of cloudfront, cloudformation, and S3 bucket
             command: |
                 export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+                export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
                 aws s3 rb s3://udapeople-frontend-deployment-${OLD_WORKFLOW_ID} --force  --region "us-east-1"
                 aws cloudformation delete-stack --stack-name  backend-stack-${OLD_WORKFLOW_ID}
                 aws cloudformation delete-stack --stack-name  cloudfront-${OLD_WORKFLOW_ID}
@@ -370,4 +371,7 @@ workflows:
           requires:
             - deploy-frontend
             - deploy-backend
+      - cloudfront-update:
+          requires:
+            - smoke-tests
 
