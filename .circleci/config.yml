@@ -135,7 +135,7 @@ jobs:
     steps:
       - checkout
       - run: yum install -y tar gzip
-      - run: sudo yum install nodejs npm --enablerepo=epel
+      - run: yum install nodejs npm --enablerepo=epel
       - attach_workspace:
           at: /tmp/workspace
       - restore_cache:
