@@ -131,15 +131,15 @@ jobs:
       - destroy-environment
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
       - attach_workspace:
           at: /tmp/workspace
       - checkout
+      - run: yum install -y tar gzip
       - restore_cache:
           keys:
             - "backend-packages"
-      - run: sudo apt-get install awscli
       - run:
             name: Creating environment file for backend
             command: |
