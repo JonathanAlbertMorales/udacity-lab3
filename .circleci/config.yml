@@ -254,17 +254,17 @@ jobs:
               aws s3 cp --recursive /tmp/workspace/frontend s3://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}
         - destroy-environment
         - revert-migration
-  smoke-test:
+  smoke-tests:
     docker:
-       - image: alpine:latest
+        - image: alpine:latest
     steps:
        - run: apk add --update curl
        - run: pip install awscli
        - attach_workspace:
             at: /tmp/workspace
        - run: 
-           name: smoke test for frontend
-           command: |
+            name: smoke test for frontend
+            command: |
               URL="http://udapeople-frontend-deployment-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html#/employees"    
               if curl -s --head ${URL}
               then
@@ -272,34 +272,34 @@ jobs:
               else
                return 1
               fi
-      - run:
-           name: smoketest for backend
-           command: | 
+       - run:
+          name: smoketest for backend
+          command: | 
                 API_URL=$(curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend-url)
                 curl "http://${API_URL}:3030/api/status"
-      - destroy-environment
-      - revert-migration
+       - destroy-environment
+       - revert-migration
   cloudfront-update:
      docker:
        - image: amazon/aws-cli
      steps:
-       - checkout
-       - attach_workspace:
+        - checkout
+        - attach_workspace:
             at: /tmp/workspace
-       - run:
-           name: update cloudformation
-           command: |
-               aws cloudformation deploy --stack-name "cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --template-file ~/.circleci/files/cloudfront.yml --capabilities CAPABILITY_NAMED_IAM
-       - run:
-           name: delete old stacks of cloudfront, cloudformation, and S3 bucket
-           command: |
-               export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
-               aws s3 rb s3://udapeople-frontend-deployment-${OLD_WORKFLOW_ID} --force  --region "us-east-1"
-               aws cloudformation delete-stack --stack-name  backend-stack-${OLD_WORKFLOW_ID}
-               aws cloudformation delete-stack --stack-name  cloudfront-${OLD_WORKFLOW_ID}
+        - run:
+            name: update cloudformation
+            command: |
+              aws cloudformation deploy --stack-name "cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --template-file ~/.circleci/files/cloudfront.yml --capabilities CAPABILITY_NAMED_IAM
+        - run:
+            name: delete old stacks of cloudfront, cloudformation, and S3 bucket
+            command: |
+                export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+                aws s3 rb s3://udapeople-frontend-deployment-${OLD_WORKFLOW_ID} --force  --region "us-east-1"
+                aws cloudformation delete-stack --stack-name  backend-stack-${OLD_WORKFLOW_ID}
+                aws cloudformation delete-stack --stack-name  cloudfront-${OLD_WORKFLOW_ID}
         - destroy-environment
         - revert-migration
-  run-prometheus-exporter:
+  prometheus-exporter:
     docker:
       - image: python:3.7-alpine3.11
     steps: 
@@ -309,19 +309,19 @@ jobs:
       - add_ssh_keys:
            fingerprints: ["aa:81:14:df:30:45:ca:43:bd:d2:28:03:38:3a:fc:c9"]
       - run:
-          name: Install dependencies
+          name: install dependencies
           command: |
                 apk add --update ansible
                 pip install awscli
       - run: 
-          name: Configure prometheus-node
+          name: configure prometheus
           command: |
-                apk --no-cache add curl && 
-                echo [all] > ~/inventory.txt &&
-                curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend_url >> ~/inventory.txt && 
-                export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook  -i ~/inventory.txt .circleci/ansible/roles/configure-prometheus-node-exporter/playbook.yml
-          - destroy-environment
-          - revert-migration
+              apk --no-cache add curl && 
+              echo [all] > ~/inventory.txt &&
+              curl -H "token: c5c72391-6f79-4966-be00-c6c4d4c2ef3d" --request GET https://api.memstash.io/values/backend_url >> ~/inventory.txt && 
+              export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook  -i ~/inventory.txt .circleci/ansible/roles/configure-prometheus-node-exporter/playbook.yml
+      - destroy-environment
+      - revert-migration
 
 workflows:
   frontend:
