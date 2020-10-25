@@ -359,7 +359,7 @@ workflows:
       - deploy-frontend:
           requires:
             - configure-frontend
-      - smoke-test:
+      - smoke-tests:
           requires:
             - deploy-frontend
             - deploy-backend
